@@ -4,6 +4,8 @@ import tkinter
 
 class URL:
     def __init__(self, url):
+        self.httpVersion = '1.0'
+        self.userAgent = "Rohit Browser"
         self.scheme, url = url.split("://",1)
         assert self.scheme in ['http', "https"]
 
@@ -21,6 +23,7 @@ class URL:
             self.host, port = self.host.split(":",1)
             self.port = int(port)
 
+
     def request(self):
         s = socket.socket(
             family=socket.AF_INET,
@@ -34,10 +37,18 @@ class URL:
 
         s.connect((self.host, self.port))
 
-        request = "GET {} HTTP/1.0\r\n".format(self.path)
-        request += "Host: {}\r\n".format(self.host)
-        request += '\r\n'
-        s.send(request.encode("utf8"))
+        if self.httpVersion == "1.0":
+            request = "GET {} HTTP/1.0\r\n".format(self.path)
+            request += "Host: {}\r\n".format(self.host)
+            request += '\r\n'
+            s.send(request.encode("utf8"))
+        elif self.httpVersion == "1.1":
+            request = "GET {} HTTP/1.1\r\n".format(self.path)
+            request += "Host: {}\r\n".format(self.host)
+            request += "Connection: close\r\n"
+            request += "User-Agent: {}\r\n".format(self.userAgent)
+            request += '\r\n'
+            s.send(request.encode("utf8"))
 
         response = s.makefile("r",encoding="utf8", newline="\r\n")
         statusline = response.readline()
